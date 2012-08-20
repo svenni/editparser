@@ -1,0 +1,1 @@
+This is a very limited EDL parser that works with CMX3600 EDL files. This was written to solve a very specific task so this doesn't support everything EDL's support.
