@@ -26,85 +26,19 @@
 
 import os
 import re
-import logging
+import sys
 
+class ParserError(Exception):
+    pass
 
-
-log = logging.getLogger('editparser')
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-# create formatter
-formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
-# add formatter to ch
-ch.setFormatter(formatter)
-# add ch to logger
-log.addHandler(ch)
-
-
-def parse(edlPath, startTC=None):
-	log.info('starting parsing of: %s' % edlPath)
-	if not os.path.exists(edlPath):
-		log.error( 'Path does not exist: %s' % edlPath )
-	try:
-		edlFile = open(edlPath,'rt')
-	except:
-		log.exception('Unable to open file %s' % edlPath)
-	
-	edlLines = edlFile.readlines()	
-	edlFile.close()
-	
-	search = re.search(r'TITLE:\s+(.*)', edlLines[0])
-	if not search:
-		log.warning( 'No title found, defaulting to \'edl\'' )
-		edlName = 'edl'
-	else:
-		edlName = search.groups(0)[0].strip()
-	
-	if startTC:
-		theEdl = EDL(edlName, edlPath, startTimeCode=TimeCode(startTC))
-	else:
-		theEdl = EDL(edlName, edlPath)
-	
-	editNumberExp = re.compile(r'(\d{3})')
-	editSearchExp = re.compile(r'\d{3}.*[A-Z]\s(.*)')
-	editNameExp = re.compile(r'\*\sFROM\sCLIP\sNAME:\s(.*)')
-	
-	for i in range(2,len(edlLines),2):
-		tcLine = edlLines[i]
-		nameLine = edlLines[i+1]
-		editSearch = re.search(editSearchExp, tcLine)
-		if editSearch:
-			editTC = editSearch.groups(0)[0].strip()
-		else:
-			log.error('No timecode found in line: %s % tcLine, skipping')
-			continue
-		
-		editNumberSearch = re.search(editNumberExp, tcLine)
-		if editNumberSearch:
-			editNumber = int(editNumberSearch.groups(0)[0])
-		else:
-			editNumber = 1
-			log.warning('No edit number found in line: %s, defaulting to 1' % 
-                                                                        tcLine)
-		
-		editNameSearch = re.search(editNameExp, nameLine)
-		if editNameSearch:
-			editName = editNameSearch.groups(0)[0].strip()
-		else:
-			editName = 'edit'
-			log.warning('No name found in line: %s, defaulting to \'edit\'' % 
-			                                                          nameLine)
-		
-		tcParts = editTC.split(' ')
-		
-		mediaInOut = (TimeCode(tcParts[0]), TimeCode(tcParts[1]))
-		globalInOut = (TimeCode(tcParts[2]), TimeCode(tcParts[3]))
-		
-		currentEdit = Edit(editNumber, editName, mediaInOut, globalInOut)
-		theEdl.appendEdit(currentEdit)
-		
-	
-	return theEdl
+def parse(edl_path, start_tc=None, format='cmx3600'):
+    try:
+        __import__('editparser.%s' % format)
+        parser = sys.modules['editparser.%s' % format]
+    except ImportError:
+        raise ParserError('Invalid format')
+    
+    return parser.parse(edl_path, start_tc)
 
 			
 class TimeCode():
@@ -199,7 +133,6 @@ class EDL():
 			res = self._edits[index]
 		except IndexError:
 			res = None
-			log.error('NO edit at position %i', index)
 		return res
 		
 class Edit():
