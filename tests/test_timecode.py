@@ -100,7 +100,12 @@ class Test_toFrames(unittest.TestCase):
         self.assertRaises(RuntimeError, self.tc.toFrames, '00:00:00')
         self.assertRaises(RuntimeError, self.tc.toFrames, '00:00')
         self.assertRaises(RuntimeError, self.tc.toFrames, '')
-        self.assertRaises(RuntimeError, self.tc.toFrames, '00:00:00:00:00') 
+        self.assertRaises(RuntimeError, self.tc.toFrames, '00:00:00:00:00')
+
+class Test_fromMsec(unittest.TestCase):
+    def test_create_from_msec(self):
+        tc = TimeCode.from_msec(2520.0, base=25)
+        self.assertEquals(tc.tc(), '00:00:02:13')
     
 
 if __name__ == '__main__':
