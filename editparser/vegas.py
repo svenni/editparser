@@ -62,15 +62,18 @@ def parse(edl_path, start_tc=None, base=25):
             print 'ERROR:', err
             continue
 
-        global_in_msec = vLine.StartTime
-        media_length_msec = vLine.Length
+        global_in_tc = TimeCode.from_msec(vLine.StartTime, base=base)
+        global_length_tc = TimeCode.from_msec(vLine.Length, base=base)
+        global_out_tc = global_in_tc + global_length_tc
 
-        global_in_tc = TimeCode.from_msec(global_in_msec, base=25)
-        media_length_tc = TimeCode.from_msec(media_length_msec, base=25)
+        media_in_tc = TimeCode.from_msec(vLine.StreamStart, base=base)
+        media_length_tc = TimeCode.from_msec(vLine.StreamLength, base=base)
+        media_out_tc = media_in_tc + media_length_tc
 
-        print global_in_tc, media_length_tc, global_in_tc + media_length_tc
+        current_edit = Edit(edit_number, edit_name, (media_in_tc, media_out_tc), (global_in_tc, global_out_tc), **vLine._dict)
+        the_edl.appendEdit(current_edit)
 
-
+    return the_edl
 
 
 

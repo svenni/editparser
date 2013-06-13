@@ -33,6 +33,8 @@ import sys
 class ParserError(Exception):
     pass
 
+class TimeCodeError(Exception):
+    pass
 
 def parse(edl_path, start_tc=None, format='cmx3600'):
     '''
@@ -64,6 +66,9 @@ class TimeCode():
         frames = (seconds * base) + int(base * millisec/1000)
 
         return TimeCode(frames=frames, base=base)
+
+    def base(self):
+        return self._base
 
     def tc(self):
         if self._frames < 0:
@@ -119,9 +124,12 @@ class TimeCode():
         return self.__str__()
 
     def __add__(self, other):
-        # TODO: fix mixed bases. class var?
+        # adding Timecodes in different bases is possible but confusing, so we just error
+        if self.base() != other.base():
+            raise TimeCodeError('Cannot add two TimeCode objects with different bases!')
+
         newFrameLength = self._frames + other._frames
-        return TimeCode(frames=newFrameLength)
+        return TimeCode(frames=newFrameLength, base=self.base())
 
     def __sub__(self, other):
         newFrameLength = self._frames - other._frames

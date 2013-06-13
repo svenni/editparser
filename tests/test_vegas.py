@@ -38,14 +38,16 @@ edl_path = os.path.join(tests_folder, edl_file)
 
 class Test_Vegas_Basic_Parsing(unittest.TestCase):
     def test_basic_parsing(self):
-        edl = editparser.parse(edl_path, format='vegas')
+        editparser.parse(edl_path, format='vegas')
+
 
 class Test_Vegas_Parsing(unittest.TestCase):
     def setUp(self):
         self.edl = editparser.parse(edl_path, format='vegas')
 
     def test_something(self):
-        pass
+        print self.edl.getEdit(4)
+
 
 class Test_Vegas_VegasEDLLine(unittest.TestCase):
     def setUp(self):
