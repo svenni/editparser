@@ -33,20 +33,22 @@ import sys
 class ParserError(Exception):
     pass
 
+
 class TimeCodeError(Exception):
     pass
 
-def parse(edl_path, start_tc=None, format='cmx3600'):
+
+def parse(edl_path, start_tc=None, format='cmx3600', base=25):
     '''
     Parses the given *edl_path* assuming the file is in the format *format*.
     '''
     try:
-        __import__('editparser.%s' % format)
-        parser = sys.modules['editparser.%s' % format]
+        __import__('%s.%s' % (__name__, format))
+        parser = sys.modules['%s.%s' % (__name__, format)]
     except ImportError:
         raise ParserError('Invalid format')
 
-    return parser.parse(edl_path, start_tc)
+    return parser.parse(edl_path, start_tc, base=base)
 
 
 class TimeCode():
@@ -132,12 +134,15 @@ class TimeCode():
         return TimeCode(frames=newFrameLength, base=self.base())
 
     def __sub__(self, other):
+        if self.base() != other.base():
+            raise TimeCodeError('Cannot subtract two TimeCode objects with different bases!')
+
         newFrameLength = self._frames - other._frames
-        return TimeCode(frames=newFrameLength)
+        return TimeCode(frames=newFrameLength, base=self.base())
 
 
 class EDL():
-    def __init__(self, title, path, startTimeCode=TimeCode('01:00:00:00')):
+    def __init__(self, title, path, startTimeCode):
         self._title = title
         self._edits = []
         self._edlPath = path
@@ -188,16 +193,22 @@ class Edit():
     def mediaOut(self):
         return self._mediaOut
 
-    def globalIn(self, refTC=TimeCode(frames=0)):
+    def globalIn(self, refTC=None):
+        if refTC is None:
+            refTC = TimeCode(frames=0, base=self._globalIn.base())
         return self._globalIn-refTC
 
-    def globalOut(self, refTC=TimeCode(frames=0)):
+    def globalOut(self, refTC=None):
+        if refTC is None:
+            refTC = TimeCode(frames=0, base=self._globalOut.base())
         return self._globalOut-refTC
 
     def mediaInOut(self):
         return (self._mediaIn, self._mediaOut)
 
-    def globalInOut(self, refTC=TimeCode(frames=0)):
+    def globalInOut(self, refTC=None):
+        if refTC is None:
+            refTC = TimeCode(frames=0, base=self._globalIn.base())
         return (self._globalIn-refTC, self._globalOut-refTC)
 
     def setMediaInOut(self, mediaInOut):

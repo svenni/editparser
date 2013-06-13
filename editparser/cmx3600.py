@@ -26,10 +26,10 @@
 import os
 import re
 
-from editparser import EDL, TimeCode, Edit
+from . import EDL, TimeCode, Edit
 
 
-def parse(edl_path, start_tc=None):
+def parse(edl_path, start_tc=None, base=25):
     if not os.path.exists(edl_path):
         raise IOError('Path does not exist: %s' % edl_path)
 
@@ -45,9 +45,9 @@ def parse(edl_path, start_tc=None):
         edl_name = search.groups(0)[0].strip()
 
     if start_tc:
-        the_edl = EDL(edl_name, edl_path, start_timecode=TimeCode(start_tc))
+        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc, base=base))
     else:
-        the_edl = EDL(edl_name, edl_path)
+        the_edl = EDL(edl_name, edl_path, TimeCode('01:00:00:00', base=base))
 
     edit_number_exp = re.compile(r'(\d{3})')
     edit_search_exp = re.compile(r'\d{3}.*[A-Z]\s(.*)')
@@ -76,8 +76,8 @@ def parse(edl_path, start_tc=None):
 
         tc_parts = edit_tc.split(' ')
 
-        media_in_out = (TimeCode(tc_parts[0]), TimeCode(tc_parts[1]))
-        global_in_out = (TimeCode(tc_parts[2]), TimeCode(tc_parts[3]))
+        media_in_out = (TimeCode(tc_parts[0], base=base), TimeCode(tc_parts[1], base=base))
+        global_in_out = (TimeCode(tc_parts[2], base=base), TimeCode(tc_parts[3], base=base))
 
         current_edit = Edit(edit_number, edit_name, media_in_out, global_in_out)
         the_edl.appendEdit(current_edit)

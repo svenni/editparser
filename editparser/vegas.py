@@ -26,7 +26,7 @@
 import os
 import re
 
-from editparser import EDL, TimeCode, Edit, ParserError
+from . import EDL, TimeCode, Edit, ParserError
 
 
 def parse(edl_path, start_tc=None, base=25):
@@ -44,9 +44,9 @@ def parse(edl_path, start_tc=None, base=25):
     edl_name = os.path.basename(edl_path)
 
     if start_tc:
-        the_edl = EDL(edl_name, edl_path, start_timecode=TimeCode(start_tc))
+        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc))
     else:
-        the_edl = EDL(edl_name, edl_path)
+        the_edl = EDL(edl_name, edl_path, TimeCode('01:00:00:00'))
 
     for line in edl_lines:
         try:

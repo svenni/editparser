@@ -39,5 +39,11 @@ class Test_CMX3600(unittest.TestCase):
     def test_basic_parsing(self):
         edl = editparser.parse(edl_path, format='cmx3600')
 
+class TestArbitraryBase(unittest.TestCase):
+    def test_valid_base_parsing(self):
+        edl = editparser.parse(edl_path, format='cmx3600', base=30)
+        edit = edl.getEdit(0)
+        self.assertEquals(edit.globalIn().base(), 30)
+
 if __name__ == '__main__':
     unittest.main()

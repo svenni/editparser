@@ -74,6 +74,22 @@ class Test_basic_functions(unittest.TestCase):
         new_tc = tc1 + tc2
 
         self.assertEquals(new_tc.base(), tc1.base())
+        self.assertEquals(new_tc.frames(), 49)
+
+    def test_subtraction_mixed_bases(self):
+        tc1 = TimeCode(frames=25, base=25)
+        tc2 = TimeCode(frames=25, base=24)
+
+        self.assertRaises(TimeCodeError, tc1.__sub__, tc2)
+
+    def test_subtraction_non_default_base(self):
+        tc1 = TimeCode(frames=10, base=10)
+        tc2 = TimeCode(frames=5, base=10)
+
+        new_tc = tc1 - tc2
+
+        self.assertEquals(new_tc.base(), tc1.base())
+        self.assertEquals(new_tc.frames(), 5)
 
 
 
