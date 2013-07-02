@@ -45,9 +45,9 @@ def parse(edl_path, start_tc=None, base=25):
         edl_name = search.groups(0)[0].strip()
 
     if start_tc:
-        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc, base=base))
+        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc, base=base), base=base)
     else:
-        the_edl = EDL(edl_name, edl_path, TimeCode('01:00:00:00', base=base))
+        the_edl = EDL(edl_name, edl_path, base=base)
 
     edit_number_exp = re.compile(r'(\d{3})')
     edit_search_exp = re.compile(r'\d{3}.*[A-Z]\s(.*)')

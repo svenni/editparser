@@ -123,7 +123,7 @@ class TimeCode():
         return self.tc()
 
     def __repr__(self):
-        return self.__str__()
+        return '<TimeCode:%s>' % self.__str__()
 
     def __add__(self, other):
         # adding Timecodes in different bases is possible but confusing, so we just error
@@ -142,11 +142,11 @@ class TimeCode():
 
 
 class EDL():
-    def __init__(self, title, path, startTimeCode):
+    def __init__(self, title, path, startTimeCode='01:00:00:00', base=25):
         self._title = title
         self._edits = []
         self._edlPath = path
-        self.startTC = startTimeCode
+        self.startTC = TimeCode(startTimeCode, base=base)
 
     def appendEdit(self, edit):
         self._edits.append(edit)
@@ -163,6 +163,15 @@ class EDL():
         except IndexError:
             res = None
         return res
+
+    def title(self):
+        return self._title
+
+    def path(self):
+        return self._edlPath
+
+    def start_tc(self):
+        return self.startTC
 
 
 class Edit():

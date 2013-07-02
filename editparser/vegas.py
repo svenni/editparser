@@ -44,9 +44,9 @@ def parse(edl_path, start_tc=None, base=25):
     edl_name = os.path.basename(edl_path)
 
     if start_tc:
-        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc))
+        the_edl = EDL(edl_name, edl_path, TimeCode(start_tc), base=base)
     else:
-        the_edl = EDL(edl_name, edl_path, TimeCode('01:00:00:00'))
+        the_edl = EDL(edl_name, edl_path, base=base)
 
     for line in edl_lines:
         try:
