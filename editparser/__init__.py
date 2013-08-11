@@ -37,11 +37,15 @@ class ParserError(Exception):
 class TimeCodeError(Exception):
     pass
 
+class EditError(Exception):
+    pass
+
 
 def parse(edl_path, start_tc=None, format='cmx3600', base=25):
     '''
     Parses the given *edl_path* assuming the file is in the format *format*.
     '''
+
     try:
         __import__('%s.%s' % (__name__, format))
         parser = sys.modules['%s.%s' % (__name__, format)]
@@ -140,6 +144,21 @@ class TimeCode():
         newFrameLength = self._frames - other._frames
         return TimeCode(frames=newFrameLength, base=self.base())
 
+    def __eq__(self, other):
+        if self.base() != other.base():
+            return False
+
+        if self.frames() == other.frames():
+            return True
+        else:
+            return False
+
+    def __ne__(self, other):
+        if self.frames() == other.frames():
+            return False
+        else:
+            return True
+
 
 class EDL():
     def __init__(self, title, path, startTimeCode='01:00:00:00', base=25):
@@ -175,26 +194,32 @@ class EDL():
 
 
 class Edit():
-    def __init__(self, number, name, mediaInOut, globalInOut, **kwargs):
-        self._number = number
-        self._name = name
+    def __init__(self, mediaIn, mediaOut, globalIn, globalOut, **kwargs):
+        self._mediaIn = self.parse_input_tc(mediaIn)
+        self._mediaOut = self.parse_input_tc(mediaOut)
+        self._globalIn = self.parse_input_tc(globalIn)
+        self._globalOut = self.parse_input_tc(globalOut)
 
-        self.setMediaInOut(mediaInOut)
-        self.setGlobalInOut(globalInOut)
+        if self._globalIn.frames() > self._globalOut.frames():
+            raise RuntimeError('Global In cannot be after Global Out!')
+
+        if not (self._mediaIn.base() == self._mediaOut.base() ==
+                self._globalIn.base() == self._globalOut.base()):
+            raise RuntimeError('Input TimeCode objects do not have the same base.')
 
         self._attributes = kwargs
 
-    def name(self):
-        return self._name
-
-    def number(self):
-        return self._number
-
-    def setNumber(self, number):
-        self._number = number
-
-    def setName(self, name):
-        self._name = name
+    def parse_input_tc(self, tc):
+        if not isinstance(tc, TimeCode):
+            # not timecode, check if input is string
+            if isinstance(tc, basestring):
+                try:
+                    tc = TimeCode(tc)
+                except RuntimeError:
+                    raise RuntimeError('Invalid formatted TimeCode string "%s"' % tc)
+            else:
+                raise RuntimeError('Edit takes either TimeCode objects or TimeCode formatted strings as input!')
+        return tc
 
     def mediaIn(self):
         return self._mediaIn
@@ -218,33 +243,36 @@ class Edit():
     def globalInOut(self, refTC=None):
         if refTC is None:
             refTC = TimeCode(frames=0, base=self._globalIn.base())
-        return (self._globalIn-refTC, self._globalOut-refTC)
-
-    def setMediaInOut(self, mediaInOut):
-        self._mediaIn = mediaInOut[0]
-        self._mediaOut = mediaInOut[1]
-
-    def setGlobalInOut(self, globalInOut):
-        self._globalIn = globalInOut[0]
-        self._globalOut = globalInOut[1]
+        return (self.globalIn(refTC), self.globalOut(refTC))
 
     def setMediaIn(self, mediaIn):
+        if mediaIn.base() != self._mediaIn.base():
+            raise EditError('Wrong input base! Expected %s, got %s.' % (self._mediaIn.base(), mediaIn.base()))
         self._mediaIn = mediaIn
 
     def setMediaOut(self, mediaOut):
+        if mediaOut.base() != self._mediaOut.base():
+            raise EditError('Wrong input base! Expected %s, got %s.' % (self._mediaOut.base(), mediaOut.base()))
         self._mediaOut = mediaOut
 
     def setGlobalIn(self, globalIn):
+        if globalIn.base() != self._globalIn.base():
+            raise EditError('Wrong input base! Expected %s, got %s.' % (self._globalIn.base(), globalIn.base()))
         self._globalIn = globalIn
 
     def setGlobalOut(self, globalOut):
+        if globalOut.base() != self._globalOut.base():
+            raise EditError('Wrong input base! Expected %s, got %s.' % (self._globalOut.base(), globalOut.base()))
         self._globalOut = globalOut
 
-    def get(self, attribute):
-        return self._attributes.get(attribute)
+    def get(self, attribute, default=None):
+        return self._attributes.get(attribute, default)
 
     def set(self, attribute, value):
         self._attributes[attribute] = value
 
+    def attributes(self):
+        return self._attributes
+
     def __repr__(self):
-        return str(self._number).rjust(3, '0') + ' - ' + str(self._name) + ' - ' + str(self._mediaIn)
+        return '< Edit: %s[%s;%s]%s>' % (self._globalIn, self._mediaIn, self._mediaOut, self._globalOut)
