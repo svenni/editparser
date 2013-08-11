@@ -174,6 +174,28 @@ class Test_fromMsec(unittest.TestCase):
         tc = TimeCode.from_msec(2520.0, base=25)
         self.assertEquals(tc.tc(), '00:00:02:13')
 
+class Test_equality(unittest.TestCase):
+    def setUp(self):
+        self.a = TimeCode('00:00:01:00', base=25)
+        self.b = TimeCode('00:00:05:00', base=24)
+
+    def test_equality(self):
+        self.assertEquals(self.a, TimeCode('00:00:01:00', base=25))
+        self.assertFalse(self.a == TimeCode('00:00:08:00', base=25))
+
+    def test_inequality(self):
+        self.assertFalse(self.a != TimeCode('00:00:01:00', base=25))
+        self.assertTrue(self.a != TimeCode('00:00:03:00'))
+
+    def test_base_equality(self):
+        self.assertFalse(self.a == TimeCode('00:00:01:00', base=12))
+
+    def test_base_inequality(self):
+        self.assertFalse(self.a != TimeCode('00:00:01:00', base=25))
+        self.assertTrue(self.a != TimeCode('00:00:01:00', base=12))
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

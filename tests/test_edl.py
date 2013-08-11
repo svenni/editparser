@@ -25,7 +25,7 @@
 
 import unittest
 
-from editparser import EDL, Edit
+from editparser import EDL, Edit, TimeCode
 
 
 class TestEDLCreation(unittest.TestCase):
@@ -53,12 +53,40 @@ class TestEDLCreation(unittest.TestCase):
         self.assertEquals(edl.start_tc().base(), 20)
         self.assertEquals(edl.start_tc().frames(), 25)
 
+
 class TestEditManagement(unittest.TestCase):
     def setUp(self):
-        self.edit_a = Edit(0, 'n', 'mio', 'gio')
+        self.mi = TimeCode('00:00:00:01')
+        self.mo = TimeCode('00:00:00:03')
+        self.gi = TimeCode('00:00:01:01')
+        self.go = TimeCode('00:00:02:01')
 
-    def test_yes(self):
-        pass
+        self.edit_c = Edit(self.mi, self.mo, self.gi, self.go)
+        self.edit_a = Edit(self.mi, self.mo, self.gi, self.go)
+        self.edit_b = Edit(self.mi, self.mo, self.gi, self.go)
+        print self.edit_c
+
+        self.edl = EDL('testEDL', 'edlpath', startTimeCode='00:00:01:05')
+
+    def test_add_edits(self):
+        self.assertEquals(len(self.edl.getAllEdits()), 0)
+        self.edl.appendEdit(self.edit_a)
+        self.edl.appendEdit(self.edit_b)
+        self.assertEquals(len(self.edl.getAllEdits()), 2)
+
+    def test_insert_edits(self):
+        self.edl.appendEdit(self.edit_a)
+        self.assertEquals(self.edl.getAllEdits(), [self.edit_a])
+        self.edl.insertEdit(0, self.edit_b)
+        self.assertEquals(self.edl.getAllEdits(), [self.edit_b, self.edit_a])
+
+    def test_get_edits(self):
+        self.edl.appendEdit(self.edit_a)
+        self.edl.appendEdit(self.edit_b)
+
+        self.assertEquals(self.edl.getEdit(0), self.edit_a)
+
+        self.assertIsNone(self.edl.getEdit(8))
 
 
 if __name__ == '__main__':
