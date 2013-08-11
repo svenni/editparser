@@ -4,3 +4,5 @@
 cover
 *.swo
 *.swp
+*.sublime-project
+*.sublime-workspace
