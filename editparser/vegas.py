@@ -70,7 +70,7 @@ def parse(edl_path, start_tc=None, base=25):
         media_length_tc = TimeCode.from_msec(vLine.StreamLength, base=base)
         media_out_tc = media_in_tc + media_length_tc
 
-        current_edit = Edit(edit_number, edit_name, (media_in_tc, media_out_tc), (global_in_tc, global_out_tc), **vLine._dict)
+        current_edit = Edit(media_in_tc, media_out_tc, global_in_tc, global_out_tc, **vLine._dict)
         the_edl.appendEdit(current_edit)
 
     return the_edl

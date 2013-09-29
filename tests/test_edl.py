@@ -64,7 +64,7 @@ class TestEditManagement(unittest.TestCase):
         self.edit_c = Edit(self.mi, self.mo, self.gi, self.go)
         self.edit_a = Edit(self.mi, self.mo, self.gi, self.go)
         self.edit_b = Edit(self.mi, self.mo, self.gi, self.go)
-        print self.edit_c
+        #print self.edit_c
 
         self.edl = EDL('testEDL', 'edlpath', startTimeCode='00:00:01:05')
 

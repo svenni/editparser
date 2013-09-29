@@ -44,9 +44,7 @@ class Test_Vegas_Basic_Parsing(unittest.TestCase):
 class Test_Vegas_Parsing(unittest.TestCase):
     def setUp(self):
         self.edl = editparser.parse(edl_path, format='vegas')
-
-    def test_something(self):
-        print self.edl.getEdit(4)
+        edit = self.edl.getEdit(7)
 
 
 class Test_Vegas_VegasEDLLine(unittest.TestCase):
