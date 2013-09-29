@@ -207,6 +207,7 @@ class Edit():
                 self._globalIn.base() == self._globalOut.base()):
             raise RuntimeError('Input TimeCode objects do not have the same base.')
 
+        #print 'creating edit, kwargs:', kwargs
         self._attributes = kwargs
 
     def parse_input_tc(self, tc):
@@ -269,6 +270,7 @@ class Edit():
         return self._attributes.get(attribute, default)
 
     def set(self, attribute, value):
+        #print 'setting attr', attribute, 'to', value
         self._attributes[attribute] = value
 
     def attributes(self):
